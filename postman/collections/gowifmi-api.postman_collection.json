@@ -1,1 +1,160 @@
-
+{
+	"info": {
+		"_postman_id": "6b63e3f5-96e3-4d70-af2b-3ba02cba11ac",
+		"name": "Gowifmi API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48227325",
+		"_collection_link": "https://tondelearnold85-7305187.postman.co/workspace/Gowifmi-API-TEST-~8f5052e2-e303-42dc-b19e-d55fb028931b/collection/48227325-6b63e3f5-96e3-4d70-af2b-3ba02cba11ac?action=share&source=collection_link&creator=48227325"
+	},
+	"item": [
+		{
+			"name": "List all listings",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://dev-api.gowifmi.com/hotel_user/search?place=Tunis%2C+Tunisia&children=0&adults=1&infants=0&pets=0&checkin=2025-09-09&checkout=2025-09-10&place_id=ChIJQ_V-Xn8z_RIRdQJKcU6ScdY&currentDate=2025-09-09&user=66c49c21549737b8bf273784&userCountryCode=TN&lat=36.8064948&lng=10.1815316",
+					"protocol": "https",
+					"host": [
+						"dev-api",
+						"gowifmi",
+						"com"
+					],
+					"path": [
+						"hotel_user",
+						"search"
+					],
+					"query": [
+						{
+							"key": "place",
+							"value": "Tunis%2C+Tunisia"
+						},
+						{
+							"key": "children",
+							"value": "0"
+						},
+						{
+							"key": "adults",
+							"value": "1"
+						},
+						{
+							"key": "infants",
+							"value": "0"
+						},
+						{
+							"key": "pets",
+							"value": "0"
+						},
+						{
+							"key": "checkin",
+							"value": "2025-09-09"
+						},
+						{
+							"key": "checkout",
+							"value": "2025-09-10"
+						},
+						{
+							"key": "place_id",
+							"value": "ChIJQ_V-Xn8z_RIRdQJKcU6ScdY"
+						},
+						{
+							"key": "currentDate",
+							"value": "2025-09-09"
+						},
+						{
+							"key": "user",
+							"value": "66c49c21549737b8bf273784"
+						},
+						{
+							"key": "userCountryCode",
+							"value": "TN"
+						},
+						{
+							"key": "lat",
+							"value": "36.8064948"
+						},
+						{
+							"key": "lng",
+							"value": "10.1815316"
+						}
+					]
+				},
+				"description": "## Endpoint Description\n\nThis endpoint allows users to search for available hotels in a specified location. The search is based on various parameters such as the number of guests, check-in and check-out dates, and geographical coordinates.\n\n### Request Parameters\n\nThe following query parameters are required for the GET request:\n\n- **place** (string): The location where the user is searching for hotels (e.g., \"Tunis, Tunisia\").\n    \n- **children** (integer): The number of children (default is 0).\n    \n- **adults** (integer): The number of adults (default is 1).\n    \n- **infants** (integer): The number of infants (default is 0).\n    \n- **pets** (integer): Indicates whether pets are allowed (default is 0).\n    \n- **checkin** (string): The check-in date in YYYY-MM-DD format.\n    \n- **checkout** (string): The check-out date in YYYY-MM-DD format.\n    \n- **place_id** (string): The unique identifier for the place.\n    \n- **currentDate** (string): The current date in YYYY-MM-DD format.\n    \n- **user** (string): The unique identifier for the user making the request.\n    \n- **userCountryCode** (string): The country code of the user (e.g., \"TN\" for Tunisia).\n    \n- **lat** (float): The latitude of the search location.\n    \n- **lng** (float): The longitude of the search location.\n    \n\n### Response Structure\n\nThe response will return a JSON object with the following structure:\n\n- **isAvailable** (boolean): Indicates if hotels are available for the specified search criteria.\n    \n- **limit** (integer): The limit on the number of results returned.\n    \n- **total_hotels** (integer): The total number of hotels found.\n    \n- **total_pages** (integer): The total number of pages of results.\n    \n- **current_page** (integer): The current page of results.\n    \n- **results** (array): An array of hotel objects, each containing:\n    \n    - **_id** (string): The unique identifier for the hotel.\n        \n    - **amenities** (array): List of amenities available at the hotel.\n        \n    - **about** (object): Information about the host's activity status.\n        \n    - **details** (object): Details about the hotel including traveler count, number of rooms, beds, and bathrooms.\n        \n    - **comments** (array): User comments about the hotel.\n        \n    - **images** (array): List of images associated with the hotel, each containing:\n        \n        - **url** (string): The URL of the image.\n            \n        - **caption** (string): A caption for the image.\n            \n        - **_id** (string): The unique identifier for the image.\n            \n        - **public_id** (string): The public identifier for the image.\n            \n    - **accommodation_type** (string): Type of accommodation.\n        \n    - **address** (object): Address details including city, state, and country.\n        \n    - **location** (object): Geographical coordinates of the hotel.\n        \n    - **advantage_marketing** (string): Marketing advantages of the hotel.\n        \n    - **title** (string): The title of the hotel.\n        \n    - **user** (object): Information about the user associated with the hotel listing.\n        \n    - **image_count** (integer): The number of images available for the hotel.\n        \n    - **priceDetails** (object): Pricing information including average price per night, discounts, and currency.\n        \n\nThis endpoint provides a comprehensive search functionality for users looking to find accommodations based on their specific needs and preferences."
+			},
+			"response": []
+		},
+		{
+			"name": "View a listing details",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://dev-api.gowifmi.com/hotel_user/66caa71edac065e7ec653318/66c49c21549737b8bf273784/TN?children=0&adults=1&infants=0&pets=0&checkin=2025-09-09&checkout=2025-09-10&currentDate=2025-09-09&currency=null}",
+					"protocol": "https",
+					"host": [
+						"dev-api",
+						"gowifmi",
+						"com"
+					],
+					"path": [
+						"hotel_user",
+						"66caa71edac065e7ec653318",
+						"66c49c21549737b8bf273784",
+						"TN"
+					],
+					"query": [
+						{
+							"key": "children",
+							"value": "0"
+						},
+						{
+							"key": "adults",
+							"value": "1"
+						},
+						{
+							"key": "infants",
+							"value": "0"
+						},
+						{
+							"key": "pets",
+							"value": "0"
+						},
+						{
+							"key": "checkin",
+							"value": "2025-09-09"
+						},
+						{
+							"key": "checkout",
+							"value": "2025-09-10"
+						},
+						{
+							"key": "currentDate",
+							"value": "2025-09-09"
+						},
+						{
+							"key": "currency",
+							"value": "null}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Request to book",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "New Request",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}
