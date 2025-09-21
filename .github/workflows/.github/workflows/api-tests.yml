@@ -1,0 +1,258 @@
+name: 🚀 Gowifmi API Testing & Monitoring
+
+on:
+  push:
+    branches: [ main, develop, feature/* ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Tests de monitoring quotidiens à 8h UTC
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of test to run'
+        required: true
+        default: 'functional'
+        type: choice
+        options:
+        - functional
+        - performance
+        - smoke
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - development
+        - staging
+        - production
+
+env:
+  NODE_VERSION: '18'
+  NEWMAN_VERSION: 'latest'
+
+jobs:
+  setup:
+    name: 🔧 Setup & Validation
+    runs-on: ubuntu-latest
+    outputs:
+      test-type: ${{ steps.determine-tests.outputs.test-type }}
+      environment: ${{ steps.determine-env.outputs.environment }}
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: 🎯 Determine test type
+      id: determine-tests
+      run: |
+        if [ "${{ github.event_name }}" = "schedule" ]; then
+          echo "test-type=monitoring" >> $GITHUB_OUTPUT
+        elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "test-type=${{ github.event.inputs.test_type }}" >> $GITHUB_OUTPUT
+        else
+          echo "test-type=functional" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: 🌍 Determine environment
+      id: determine-env
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+        elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          echo "environment=production" >> $GITHUB_OUTPUT
+        elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+          echo "environment=staging" >> $GITHUB_OUTPUT
+        else
+          echo "environment=development" >> $GITHUB_OUTPUT
+        fi
+
+  functional-tests:
+    name: 🧪 Functional Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    if: contains(fromJSON('["functional", "smoke", "monitoring"]'), needs.setup.outputs.test-type)
+    
+    strategy:
+      matrix:
+        endpoint: [
+          "list-all-listings",
+          "view-listing-details", 
+          "request-to-book",
+          "new-request"
+        ]
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: 📦 Install Newman & dependencies
+      run: |
+        npm install -g newman newman-reporter-htmlextra newman-reporter-slackmsg
+        npm install
+    
+    - name: 🧪 Run API Tests - ${{ matrix.endpoint }}
+      run: |
+        newman run postman/collections/gowifmi-api.postman_collection.json \
+          --environment postman/environments/${{ needs.setup.outputs.environment }}.postman_environment.json \
+          --folder "${{ matrix.endpoint }}" \
+          --reporters cli,json,htmlextra \
+          --reporter-htmlextra-export reports/functional-${{ matrix.endpoint }}-report.html \
+          --reporter-htmlextra-title "Gowifmi API - ${{ matrix.endpoint }} Tests" \
+          --reporter-htmlextra-darkTheme \
+          --reporter-json-export reports/functional-${{ matrix.endpoint }}-results.json \
+          --bail \
+          --color on
+      env:
+        GOWIFMI_API_KEY: ${{ secrets.GOWIFMI_API_KEY }}
+        GOWIFMI_BASE_URL: ${{ secrets.GOWIFMI_BASE_URL }}
+    
+    - name: 📊 Upload Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: functional-test-results-${{ matrix.endpoint }}
+        path: reports/
+        retention-days: 30
+    
+    - name: 🔔 Slack Notification on Failure
+      if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+      run: |
+        newman run postman/collections/gowifmi-api.postman_collection.json \
+          --environment postman/environments/${{ needs.setup.outputs.environment }}.postman_environment.json \
+          --folder "${{ matrix.endpoint }}" \
+          --reporters slackmsg \
+          --reporter-slackmsg-webhookurl '${{ secrets.SLACK_WEBHOOK_URL }}' \
+          --reporter-slackmsg-channel '#api-alerts' \
+          --reporter-slackmsg-username 'Newman-Bot' \
+          --suppress-exit-code
+      continue-on-error: true
+
+  performance-tests:
+    name: 🚀 Performance Tests
+    runs-on: ubuntu-latest
+    needs: [setup, functional-tests]
+    if: contains(fromJSON('["performance", "monitoring"]'), needs.setup.outputs.test-type) && (success() || github.event_name == 'workflow_dispatch')
+    
+    strategy:
+      matrix:
+        load-profile: [
+          { name: "light", iterations: 50, delay: 100 },
+          { name: "medium", iterations: 100, delay: 50 },
+          { name: "heavy", iterations: 200, delay: 25 }
+        ]
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    - name: 📦 Install Newman & dependencies
+      run: |
+        npm install -g newman newman-reporter-htmlextra
+        npm install
+    
+    - name: 🚀 Run Performance Tests - ${{ matrix.load-profile.name }} Load
+      run: |
+        newman run postman/collections/gowifmi-api.postman_collection.json \
+          --environment postman/environments/${{ needs.setup.outputs.environment }}.postman_environment.json \
+          --iteration-count ${{ matrix.load-profile.iterations }} \
+          --delay-request ${{ matrix.load-profile.delay }} \
+          --reporters cli,json,htmlextra \
+          --reporter-htmlextra-export reports/performance-${{ matrix.load-profile.name }}-report.html \
+          --reporter-htmlextra-title "Gowifmi API - Performance Test (${{ matrix.load-profile.name }} load)" \
+          --reporter-json-export reports/performance-${{ matrix.load-profile.name }}-results.json \
+          --timeout-request 10000 \
+          --suppress-exit-code
+      env:
+        GOWIFMI_API_KEY: ${{ secrets.GOWIFMI_API_KEY }}
+        GOWIFMI_BASE_URL: ${{ secrets.GOWIFMI_BASE_URL }}
+    
+    - name: 📊 Analyze Performance Results
+      run: |
+        node scripts/analyze-results.js reports/performance-${{ matrix.load-profile.name }}-results.json
+    
+    - name: 📈 Upload Performance Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: performance-test-results-${{ matrix.load-profile.name }}
+        path: reports/
+        retention-days: 60
+
+  report-summary:
+    name: 📋 Generate Test Summary
+    runs-on: ubuntu-latest
+    needs: [setup, functional-tests, performance-tests]
+    if: always()
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: 📊 Download All Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: all-reports/
+    
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    - name: 📋 Generate Summary Report
+      run: |
+        node scripts/generate-summary.js all-reports/ > test-summary.md
+    
+    - name: 📝 Comment PR with Results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('test-summary.md', 'utf8');
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary
+          });
+    
+    - name: 📤 Upload Summary Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-summary-report
+        path: test-summary.md
+
+  notify-completion:
+    name: 🔔 Notify Completion
+    runs-on: ubuntu-latest
+    needs: [report-summary]
+    if: always() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    
+    steps:
+    - name: 🎉 Success Notification
+      if: needs.report-summary.result == 'success'
+      run: |
+        curl -X POST -H 'Content-type: application/json' \
+        --data '{"text":"✅ Gowifmi API Tests completed successfully for `${{ github.ref_name }}`"}' \
+        ${{ secrets.SLACK_WEBHOOK_URL }}
+    
+    - name: ❌ Failure Notification  
+      if: needs.report-summary.result != 'success'
+      run: |
+        curl -X POST -H 'Content-type: application/json' \
+        --data '{"text":"❌ Gowifmi API Tests failed for `${{ github.ref_name }}`. Check GitHub Actions for details."}' \
+        ${{ secrets.SLACK_WEBHOOK_URL }}
