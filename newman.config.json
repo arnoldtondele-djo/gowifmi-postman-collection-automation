@@ -1,0 +1,169 @@
+{
+  "name": "Gowifmi API Testing Configuration",
+  "version": "1.0.0",
+  "description": "Newman configuration for Gowifmi API automated testing",
+  
+  "defaults": {
+    "timeout": {
+      "request": 30000,
+      "script": 10000
+    },
+    "bail": false,
+    "suppressExitCode": false,
+    "insecure": false,
+    "ignoreRedirects": false,
+    "color": "on"
+  },
+  
+  "environments": {
+    "development": {
+      "file": "postman/environments/development.postman_environment.json",
+      "description": "Local development environment"
+    },
+    "staging": {
+      "file": "postman/environments/staging.postman_environment.json", 
+      "description": "Staging environment for testing"
+    },
+    "production": {
+      "file": "postman/environments/production.postman_environment.json",
+      "description": "Production environment - use with caution"
+    }
+  },
+  
+  "collections": {
+    "gowifmi-api": {
+      "file": "postman/collections/gowifmi-api.postman_collection.json",
+      "description": "Main Gowifmi API test collection"
+    }
+  },
+  
+  "test-profiles": {
+    "smoke": {
+      "description": "Quick smoke tests - essential endpoints only",
+      "folders": ["Health Check", "Authentication"],
+      "bail": true,
+      "timeout-request": 5000
+    },
+    
+    "functional": {
+      "description": "Complete functional test suite",
+      "folders": ["List all listings", "View a listing details", "Request to book", "New Request"],
+      "bail": false,
+      "timeout-request": 15000
+    },
+    
+    "regression": {
+      "description": "Full regression test suite including edge cases",
+      "bail": false,
+      "timeout-request": 20000,
+      "iteration-data": "postman/data/regression-test-data.json"
+    }
+  },
+  
+  "performance-profiles": {
+    "light-load": {
+      "description": "Light load testing - 50 users",
+      "iteration-count": 50,
+      "delay-request": 100,
+      "timeout-request": 10000
+    },
+    
+    "medium-load": {
+      "description": "Medium load testing - 100 users", 
+      "iteration-count": 100,
+      "delay-request": 50,
+      "timeout-request": 15000
+    },
+    
+    "heavy-load": {
+      "description": "Heavy load testing - 200+ users",
+      "iteration-count": 200,
+      "delay-request": 25,
+      "timeout-request": 20000
+    },
+    
+    "stress-test": {
+      "description": "Stress testing - maximum load",
+      "iteration-count": 500,
+      "delay-request": 10,
+      "timeout-request": 30000
+    }
+  },
+  
+  "reporting": {
+    "default-reporters": ["cli", "json", "htmlextra"],
+    "output-directory": "reports/",
+    
+    "html-extra": {
+      "template": "reports/templates/custom-report-template.hbs",
+      "dark-theme": true,
+      "show-only-fails": false,
+      "no-syntax-highlighting": false,
+      "omit-headers": false,
+      "omit-request-bodies": false,
+      "omit-response-bodies": false,
+      "skip-sensitive-data": true
+    },
+    
+    "json-export": {
+      "include-execution-data": true,
+      "include-request-data": true,
+      "include-response-data": true
+    }
+  },
+  
+  "monitoring": {
+    "health-check": {
+      "folders": ["Health Check"],
+      "schedule": "*/5 * * * *",
+      "timeout-request": 5000,
+      "bail": true
+    },
+    
+    "daily-regression": {
+      "schedule": "0 8 * * *",
+      "profile": "functional",
+      "environment": "production",
+      "notify-on-failure": true
+    },
+    
+    "weekly-performance": {
+      "schedule": "0 22 * * 0",
+      "profile": "medium-load", 
+      "environment": "staging",
+      "generate-trends": true
+    }
+  },
+  
+  "notifications": {
+    "slack": {
+      "enabled": true,
+      "webhook-url": "${SLACK_WEBHOOK_URL}",
+      "channel": "#api-alerts",
+      "username": "Newman-Bot",
+      "notify-on": ["failure", "performance-degradation"]
+    },
+    
+    "email": {
+      "enabled": false,
+      "smtp-server": "${SMTP_SERVER}",
+      "recipients": ["team@gowifmi.com"]
+    }
+  },
+  
+  "thresholds": {
+    "response-time": {
+      "p95": 500,
+      "p99": 1000,
+      "average": 200
+    },
+    
+    "error-rate": {
+      "max-percentage": 1.0
+    },
+    
+    "availability": {
+      "min-percentage": 99.9
+    }
+  }
+}
