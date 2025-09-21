@@ -9,16 +9,93 @@
 	"item": [
 		{
 			"name": "List all listings",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response schema is valid\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('object').that.includes.all.keys('isAvailable', 'limit', 'total_hotels', 'total_pages', 'current_page', 'results');\r",
+							"    pm.expect(responseData.results).to.be.an('array');\r",
+							"\r",
+							"    responseData.results.forEach(result => {\r",
+							"        pm.expect(result).to.be.an('object').that.includes.all.keys('_id', 'amenities', 'about', 'details', 'comments', 'images', 'accommodation_type', 'address', 'location', 'advantage_marketing', 'title', 'user', 'image_count', 'priceDetails');\r",
+							"        \r",
+							"        pm.expect(result.about).to.be.an('object').that.includes.all.keys('host_activity_status');\r",
+							"        pm.expect(result.details).to.be.an('object').that.includes.all.keys('traveler', 'number_of_rooms', 'number_of_beds', 'number_of_bathrooms', 'panoramic_views');\r",
+							"        \r",
+							"        pm.expect(result.images).to.be.an('array');\r",
+							"        result.images.forEach(image => {\r",
+							"            pm.expect(image).to.be.an('object').that.includes.all.keys('url', 'caption', '_id', 'public_id');\r",
+							"        });\r",
+							"\r",
+							"        pm.expect(result.address).to.be.an('object').that.includes.all.keys('city', 'state', 'country');\r",
+							"        pm.expect(result.location).to.be.an('object').that.includes.all.keys('coordinates');\r",
+							"        \r",
+							"        pm.expect(result.user).to.be.an('object').that.includes.all.keys('_id', 'first_name', 'createdAt', 'picture', 'about_me', 'cover_picture', 'profile_categories', 'is_identity_valid');\r",
+							"        pm.expect(result.picture).to.be.an('object').that.includes.all.keys('url', 'public_id');\r",
+							"        pm.expect(result.cover_picture).to.be.an('object').that.includes.all.keys('url', 'public_id');\r",
+							"        \r",
+							"        pm.expect(result.priceDetails).to.be.an('object').that.includes.all.keys('averagePricePerNight', 'pricePerNightWithDiscount', 'totalPricePerNight', 'totalWithServiceFee', 'cleaningFee', 'discountAmount', 'serviceFee', 'currency', 'exchangeRate', 'numberOfNights', 'discountPercentage', 'discountType');\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response contains required fields\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData).to.have.all.keys('isAvailable', 'total_hotels', 'results');\r",
+							"    pm.expect(responseData.isAvailable).to.be.a('boolean');\r",
+							"    pm.expect(responseData.total_hotels).to.be.a('number');\r",
+							"    pm.expect(responseData.results).to.be.an('array');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response structure is valid\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"\r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData).to.have.all.keys('isAvailable', 'limit', 'total_hotels', 'total_pages', 'current_page', 'results');\r",
+							"\r",
+							"    pm.expect(responseData.results).to.be.an('array');\r",
+							"\r",
+							"    responseData.results.forEach(function(hotel) {\r",
+							"        pm.expect(hotel).to.have.all.keys('_id', 'amenities', 'about', 'details', 'comments', 'images', 'accommodation_type', 'address', 'location', 'advantage_marketing', 'title', 'user', 'image_count', 'priceDetails');\r",
+							"\r",
+							"        pm.expect(hotel.user).to.have.all.keys('_id', 'first_name', 'createdAt', 'picture', 'about_me', 'cover_picture', 'profile_categories', 'is_identity_valid');\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://dev-api.gowifmi.com/hotel_user/search?place=Tunis%2C+Tunisia&children=0&adults=1&infants=0&pets=0&checkin=2025-09-09&checkout=2025-09-10&place_id=ChIJQ_V-Xn8z_RIRdQJKcU6ScdY&currentDate=2025-09-09&user=66c49c21549737b8bf273784&userCountryCode=TN&lat=36.8064948&lng=10.1815316",
-					"protocol": "https",
+					"raw": "{{base url}}/hotel_user/search?place=Tunis%2C+Tunisia&children=0&adults=1&infants=0&pets=0&checkin=2025-09-09&checkout=2025-09-10&place_id=ChIJQ_V-Xn8z_RIRdQJKcU6ScdY&currentDate=2025-09-09&user=66c49c21549737b8bf273784&userCountryCode=TN&lat=36.8064948&lng=10.1815316",
 					"host": [
-						"dev-api",
-						"gowifmi",
-						"com"
+						"{{base url}}"
 					],
 					"path": [
 						"hotel_user",
@@ -147,14 +224,34 @@
 				"header": []
 			},
 			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
 		},
 		{
-			"name": "New Request",
-			"request": {
-				"method": "GET",
-				"header": []
-			},
-			"response": []
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base url",
+			"value": ""
 		}
 	]
 }
