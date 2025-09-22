@@ -1,94 +1,30 @@
 {
   "name": "gowifmi-postman-collection-automation",
   "version": "1.0.0",
-  "description": "Automated API testing and performance monitoring for Gowifmi platform",
+  "description": "Automated testing suite for Gowifmi API using Postman collections and Newman",
   "main": "index.js",
   "scripts": {
-    "pretest": "npm run setup:directories",
-    
-    "setup:directories": "mkdir -p reports reports/templates logs",
-    
-    "test": "npm run test:functional",
-    
+    "test": "newman run postman/collections/gowifmi-api.postman_collection.json --environment postman/environments/development.postman_environment.json",
+    "test:prod": "newman run postman/collections/gowifmi-api.postman_collection.json --environment postman/environments/production.postman_environment.json",
     "test:functional": "newman run postman/collections/gowifmi-api.postman_collection.json --environment postman/environments/development.postman_environment.json --reporters cli,htmlextra --reporter-htmlextra-export reports/functional-report.html",
-    
-    "test:functional:staging": "newman run postman/collections/gowifmi-api.postman_collection.json --environment postman/environments/staging.postman_environment.json --reporters cli,htmlextra --reporter-htmlextra-export reports/functional-staging-report.html",
-    
-    "test:functional:production": "newman run postman/collections/gowifmi-api.postman_collection.json --environment postman/environments/production.postman_environment.json --reporters cli,htmlextra --reporter-htmlextra-export reports/functional-production-report.html",
-    
-    "test:smoke": "newman run postman/collections/gowifmi-api.postman_collection.json --environment postman/environments/development.postman_environment.json --folder 'Health Check' --folder 'Authentication' --bail --reporters cli,json --reporter-json-export reports/smoke-results.json",
-    
-    "test:performance": "npm run test:performance:light",
-    
-    "test:performance:light": "newman run postman/collections/gowifmi-api.postman_collection.json --environment postman/environments/staging.postman_environment.json --iteration-count 50 --delay-request 100 --reporters cli,json,htmlextra --reporter-json-export reports/performance-light-results.json --reporter-htmlextra-export reports/performance-light-report.html",
-    
-    "test:performance:medium": "newman run postman/collections/gowifmi-api.postman_collection.json --environment postman/environments/staging.postman_environment.json --iteration-count 100 --delay-request 50 --reporters cli,json,htmlextra --reporter-json-export reports/performance-medium-results.json --reporter-htmlextra-export reports/performance-medium-report.html",
-    
-    "test:performance:heavy": "newman run postman/collections/gowifmi-api.postman_collection.json --environment postman/environments/staging.postman_environment.json --iteration-count 200 --delay-request 25 --reporters cli,json,htmlextra --reporter-json-export reports/performance-heavy-results.json --reporter-htmlextra-export reports/performance-heavy-report.html",
-    
-    "test:stress": "newman run postman/collections/gowifmi-api.postman_collection.json --environment postman/environments/staging.postman_environment.json --iteration-count 500 --delay-request 10 --timeout-request 30000 --reporters cli,json --reporter-json-export reports/stress-test-results.json --suppress-exit-code",
-    
-    "test:all-endpoints": "npm run test:listings && npm run test:booking && npm run test:requests",
-    
-    "test:listings": "newman run postman/collections/gowifmi-api.postman_collection.json --environment postman/environments/development.postman_environment.json --folder 'List all listings' --folder 'View a listing details'",
-    
-    "test:booking": "newman run postman/collections/gowifmi-api.postman_collection.json --environment postman/environments/development.postman_environment.json --folder 'Request to book'",
-    
-    "test:requests": "newman run postman/collections/gowifmi-api.postman_collection.json --environment postman/environments/development.postman_environment.json --folder 'New Request'",
-    
-    "monitor:health": "newman run postman/collections/gowifmi-api.postman_collection.json --environment postman/environments/production.postman_environment.json --folder 'Health Check' --timeout-request 5000 --bail",
-    
-    "report:generate": "node scripts/generate-report.js",
-    
-    "report:analyze": "node scripts/analyze-results.js reports/",
-    
-    "report:trends": "node scripts/generate-trends.js reports/",
-    
-    "report:summary": "node scripts/generate-summary.js reports/",
-    
-    "report:open": "open reports/functional-report.html",
-    
-    "clean": "rm -rf reports/*.html reports/*.json logs/*.log",
-    
-    "clean:reports": "rm -rf reports/*",
-    
-    "clean:logs": "rm -rf logs/*",
-    
-    "validate:collection": "newman validate postman/collections/gowifmi-api.postman_collection.json",
-    
-    "validate:environment": "node scripts/validate-environment.js",
-    
-    "validate:all": "npm run validate:collection && npm run validate:environment",
-    
-    "setup:env": "node scripts/setup-environment.js",
-    
-    "backup:results": "node scripts/backup-results.js",
-    
-    "deploy:monitor": "node scripts/deploy-monitors.js",
-    
-    "ci:test": "npm run test:smoke && npm run test:functional",
-    
-    "ci:performance": "npm run test:performance:medium && npm run report:analyze",
-    
-    "dev": "npm run test:functional && npm run report:open",
-    
-    "docker:build": "docker build -t gowifmi-api-tests .",
-    
-    "docker:run": "docker run --rm -v $(pwd)/reports:/app/reports gowifmi-api-tests",
-    
-    "start": "node scripts/interactive-runner.js"
+    "test:smoke": "newman run postman/collections/gowifmi-api.postman_collection.json --environment postman/environments/development.postman_environment.json --folder 'List all listings' --bail",
+    "test:performance": "newman run postman/collections/gowifmi-api.postman_collection.json --environment postman/environments/development.postman_environment.json --iteration-count 50 --delay-request 100",
+    "generate:report": "node scripts/generate-summary.js reports/",
+    "analyze:performance": "node scripts/analyze-results.js",
+    "validate:collection": "newman run postman/collections/gowifmi-api.postman_collection.json --dry-run",
+    "setup": "npm install && mkdir -p reports scripts",
+    "clean": "rm -rf reports/* node_modules"
   },
   "keywords": [
-    "postman",
-    "newman", 
     "api-testing",
+    "postman",
+    "newman",
     "automation",
-    "performance",
-    "monitoring",
     "gowifmi",
-    "ci-cd"
+    "ci-cd",
+    "testing"
   ],
-  "author": "Gowifmi Development Team",
+  "author": "Arnold Tondele <arnold.tondele@email.com>",
   "license": "MIT",
   "dependencies": {
     "newman": "^6.0.0",
@@ -106,7 +42,26 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/gowifmi-postman-collection-automation.git"
+    "url": "https://github.com/arnoldtondele-djo/gowifmi-postman-collection-automation.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/gowifmi-postman-collection
+    "url": "https://github.com/arnoldtondele-djo/gowifmi-postman-collection-automation/issues"
+  },
+  "homepage": "https://github.com/arnoldtondele-djo/gowifmi-postman-collection-automation#readme",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "config": {
+    "newman": {
+      "timeout": {
+        "request": 30000,
+        "script": 10000
+      },
+      "bail": false,
+      "suppressExitCode": false,
+      "insecure": false,
+      "ignoreRedirects": false
+    }
+  }
+}
