@@ -1,7 +1,7 @@
 {
   "name": "Gowifmi API Testing Configuration",
-  "version": "1.0.0",
-  "description": "Newman configuration for Gowifmi API automated testing",
+  "version": "1.1.0",
+  "description": "Configuration Newman améliorée pour l'automatisation des tests API Gowifmi",
   
   "defaults": {
     "timeout": {
@@ -12,80 +12,77 @@
     "suppressExitCode": false,
     "insecure": false,
     "ignoreRedirects": false,
-    "color": "on"
+    "color": "on",
+    "verbose": true
   },
   
   "environments": {
     "development": {
       "file": "postman/environments/development.postman_environment.json",
-      "description": "Local development environment"
+      "description": "Environnement de développement local"
     },
     "staging": {
       "file": "postman/environments/staging.postman_environment.json", 
-      "description": "Staging environment for testing"
+      "description": "Environnement de staging pour les tests"
     },
     "production": {
       "file": "postman/environments/production.postman_environment.json",
-      "description": "Production environment - use with caution"
+      "description": "Environnement de production - utiliser avec précaution"
     }
   },
   
   "collections": {
     "gowifmi-api": {
       "file": "postman/collections/gowifmi-api.postman_collection.json",
-      "description": "Main Gowifmi API test collection"
+      "description": "Collection principale des tests API Gowifmi"
     }
   },
   
   "test-profiles": {
     "smoke": {
-      "description": "Quick smoke tests - essential endpoints only",
-      "folders": ["Health Check", "Authentication"],
+      "description": "Tests rapides - endpoints essentiels seulement",
+      "folders": ["List all listings"],
       "bail": true,
-      "timeout-request": 5000
+      "timeout-request": 10000,
+      "iteration-count": 1
     },
     
     "functional": {
-      "description": "Complete functional test suite",
-      "folders": ["List all listings", "View a listing details", "Request to book", "New Request"],
+      "description": "Suite complète de tests fonctionnels",
       "bail": false,
-      "timeout-request": 15000
+      "timeout-request": 20000,
+      "iteration-count": 1,
+      "delay-request": 500
     },
     
     "regression": {
-      "description": "Full regression test suite including edge cases",
+      "description": "Suite complète de tests de régression",
       "bail": false,
-      "timeout-request": 20000,
-      "iteration-data": "postman/data/regression-test-data.json"
+      "timeout-request": 25000,
+      "iteration-count": 2,
+      "delay-request": 1000
     }
   },
   
   "performance-profiles": {
     "light-load": {
-      "description": "Light load testing - 50 users",
-      "iteration-count": 50,
-      "delay-request": 100,
-      "timeout-request": 10000
-    },
-    
-    "medium-load": {
-      "description": "Medium load testing - 100 users", 
-      "iteration-count": 100,
-      "delay-request": 50,
+      "description": "Test de charge légère - 10 utilisateurs",
+      "iteration-count": 10,
+      "delay-request": 1000,
       "timeout-request": 15000
     },
     
-    "heavy-load": {
-      "description": "Heavy load testing - 200+ users",
-      "iteration-count": 200,
-      "delay-request": 25,
+    "medium-load": {
+      "description": "Test de charge moyenne - 25 utilisateurs", 
+      "iteration-count": 25,
+      "delay-request": 500,
       "timeout-request": 20000
     },
     
-    "stress-test": {
-      "description": "Stress testing - maximum load",
-      "iteration-count": 500,
-      "delay-request": 10,
+    "heavy-load": {
+      "description": "Test de charge lourde - 50 utilisateurs",
+      "iteration-count": 50,
+      "delay-request": 200,
       "timeout-request": 30000
     }
   },
@@ -94,76 +91,69 @@
     "default-reporters": ["cli", "json", "htmlextra"],
     "output-directory": "reports/",
     
+    "cli": {
+      "verbose": true,
+      "silent": false,
+      "no-summary": false,
+      "no-assertions": false,
+      "no-console": false
+    },
+    
     "html-extra": {
-      "template": "reports/templates/custom-report-template.hbs",
+      "template": "reports/templates/custom-template.hbs",
       "dark-theme": true,
       "show-only-fails": false,
       "no-syntax-highlighting": false,
       "omit-headers": false,
       "omit-request-bodies": false,
       "omit-response-bodies": false,
-      "skip-sensitive-data": true
+      "skip-sensitive-data": true,
+      "show-passed-tests": true,
+      "show-skipped-tests": true
     },
     
-    "json-export": {
+    "json": {
+      "export": true,
       "include-execution-data": true,
       "include-request-data": true,
       "include-response-data": true
     }
   },
   
-  "monitoring": {
-    "health-check": {
-      "folders": ["Health Check"],
-      "schedule": "*/5 * * * *",
-      "timeout-request": 5000,
-      "bail": true
-    },
-    
-    "daily-regression": {
-      "schedule": "0 8 * * *",
-      "profile": "functional",
-      "environment": "production",
-      "notify-on-failure": true
-    },
-    
-    "weekly-performance": {
-      "schedule": "0 22 * * 0",
-      "profile": "medium-load", 
-      "environment": "staging",
-      "generate-trends": true
-    }
-  },
-  
-  "notifications": {
-    "slack": {
+  "error-handling": {
+    "continue-on-error": true,
+    "retry-on-failure": {
       "enabled": true,
-      "webhook-url": "${SLACK_WEBHOOK_URL}",
-      "channel": "#api-alerts",
-      "username": "Newman-Bot",
-      "notify-on": ["failure", "performance-degradation"]
+      "max-retries": 2,
+      "delay": 2000
     },
-    
-    "email": {
-      "enabled": false,
-      "smtp-server": "${SMTP_SERVER}",
-      "recipients": ["team@gowifmi.com"]
+    "timeout-handling": {
+      "fail-on-timeout": true,
+      "log-timeout-details": true
     }
   },
   
-  "thresholds": {
-    "response-time": {
-      "p95": 500,
-      "p99": 1000,
-      "average": 200
+  "logging": {
+    "level": "info",
+    "format": "combined",
+    "include-timestamps": true,
+    "log-requests": true,
+    "log-responses": true,
+    "mask-sensitive-data": [
+      "api-key",
+      "authorization",
+      "token",
+      "password"
+    ]
+  },
+  
+  "validation": {
+    "schema-validation": true,
+    "response-time-thresholds": {
+      "warning": 1000,
+      "error": 5000
     },
-    
-    "error-rate": {
-      "max-percentage": 1.0
-    },
-    
-    "availability": {
-      "min-percentage": 99.9
-    }
+    "status-code-validation": true,
+    "content-type-validation": true
   }
 }
