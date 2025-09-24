@@ -1,0 +1,159 @@
+{
+  "name": "Gowifmi API Testing Configuration",
+  "version": "1.1.0",
+  "description": "Configuration Newman améliorée pour l'automatisation des tests API Gowifmi",
+  
+  "defaults": {
+    "timeout": {
+      "request": 30000,
+      "script": 10000
+    },
+    "bail": false,
+    "suppressExitCode": false,
+    "insecure": false,
+    "ignoreRedirects": false,
+    "color": "on",
+    "verbose": true
+  },
+  
+  "environments": {
+    "development": {
+      "file": "postman/environments/development.postman_environment.json",
+      "description": "Environnement de développement local"
+    },
+    "staging": {
+      "file": "postman/environments/staging.postman_environment.json", 
+      "description": "Environnement de staging pour les tests"
+    },
+    "production": {
+      "file": "postman/environments/production.postman_environment.json",
+      "description": "Environnement de production - utiliser avec précaution"
+    }
+  },
+  
+  "collections": {
+    "gowifmi-api": {
+      "file": "postman/collections/gowifmi-api.postman_collection.json",
+      "description": "Collection principale des tests API Gowifmi"
+    }
+  },
+  
+  "test-profiles": {
+    "smoke": {
+      "description": "Tests rapides - endpoints essentiels seulement",
+      "folders": ["List all listings"],
+      "bail": true,
+      "timeout-request": 10000,
+      "iteration-count": 1
+    },
+    
+    "functional": {
+      "description": "Suite complète de tests fonctionnels",
+      "bail": false,
+      "timeout-request": 20000,
+      "iteration-count": 1,
+      "delay-request": 500
+    },
+    
+    "regression": {
+      "description": "Suite complète de tests de régression",
+      "bail": false,
+      "timeout-request": 25000,
+      "iteration-count": 2,
+      "delay-request": 1000
+    }
+  },
+  
+  "performance-profiles": {
+    "light-load": {
+      "description": "Test de charge légère - 10 utilisateurs",
+      "iteration-count": 10,
+      "delay-request": 1000,
+      "timeout-request": 15000
+    },
+    
+    "medium-load": {
+      "description": "Test de charge moyenne - 25 utilisateurs", 
+      "iteration-count": 25,
+      "delay-request": 500,
+      "timeout-request": 20000
+    },
+    
+    "heavy-load": {
+      "description": "Test de charge lourde - 50 utilisateurs",
+      "iteration-count": 50,
+      "delay-request": 200,
+      "timeout-request": 30000
+    }
+  },
+  
+  "reporting": {
+    "default-reporters": ["cli", "json", "htmlextra"],
+    "output-directory": "reports/",
+    
+    "cli": {
+      "verbose": true,
+      "silent": false,
+      "no-summary": false,
+      "no-assertions": false,
+      "no-console": false
+    },
+    
+    "html-extra": {
+      "template": "reports/templates/custom-template.hbs",
+      "dark-theme": true,
+      "show-only-fails": false,
+      "no-syntax-highlighting": false,
+      "omit-headers": false,
+      "omit-request-bodies": false,
+      "omit-response-bodies": false,
+      "skip-sensitive-data": true,
+      "show-passed-tests": true,
+      "show-skipped-tests": true
+    },
+    
+    "json": {
+      "export": true,
+      "include-execution-data": true,
+      "include-request-data": true,
+      "include-response-data": true
+    }
+  },
+  
+  "error-handling": {
+    "continue-on-error": true,
+    "retry-on-failure": {
+      "enabled": true,
+      "max-retries": 2,
+      "delay": 2000
+    },
+    "timeout-handling": {
+      "fail-on-timeout": true,
+      "log-timeout-details": true
+    }
+  },
+  
+  "logging": {
+    "level": "info",
+    "format": "combined",
+    "include-timestamps": true,
+    "log-requests": true,
+    "log-responses": true,
+    "mask-sensitive-data": [
+      "api-key",
+      "authorization",
+      "token",
+      "password"
+    ]
+  },
+  
+  "validation": {
+    "schema-validation": true,
+    "response-time-thresholds": {
+      "warning": 1000,
+      "error": 5000
+    },
+    "status-code-validation": true,
+    "content-type-validation": true
+  }
+}
