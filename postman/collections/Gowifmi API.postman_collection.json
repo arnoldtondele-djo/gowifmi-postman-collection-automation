@@ -8,7 +8,7 @@
 	},
 	"item": [
 		{
-			"name": "List all listings",
+			"name": "list-all-listings",
 			"event": [
 				{
 					"listen": "test",
@@ -161,7 +161,7 @@
 			"response": []
 		},
 		{
-			"name": "View a listing details",
+			"name": "view-listing-details",
 			"request": {
 				"method": "GET",
 				"header": [],
@@ -218,7 +218,7 @@
 			"response": []
 		},
 		{
-			"name": "Request to book",
+			"name": "request-to-book",
 			"request": {
 				"method": "GET",
 				"header": []
