@@ -1,7 +1,7 @@
 {
   "name": "gowifmi-postman-collection-automation",
   "version": "1.0.0",
-  "description": "Automated testing and performance monitoring for Gowifmi API using Postman collections with GitHub Actions",
+  "description": "Automated testing with Newman and GitHub Actions",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
